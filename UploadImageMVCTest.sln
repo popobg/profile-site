@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35122.118
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UploadImageMVCTest", "UploadImageMVCTest\UploadImageMVCTest.csproj", "{3ED58AAA-00AF-4935-841D-4271A461FB81}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3ED58AAA-00AF-4935-841D-4271A461FB81}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3ED58AAA-00AF-4935-841D-4271A461FB81}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3ED58AAA-00AF-4935-841D-4271A461FB81}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3ED58AAA-00AF-4935-841D-4271A461FB81}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FC471CB0-01B1-46D3-ADD6-6E7C209A5F53}
+	EndGlobalSection
+EndGlobal

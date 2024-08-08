@@ -1,0 +1,34 @@
+﻿@using UploadImageMVCTest.Models.Entities
+@model List<UploadImageMVCTest.Models.Entities.User>
+
+@{
+    ViewData["Title"] = "List of users";
+}
+
+<h1>Users</h1>
+
+@if (Model is not null && Model.Count > 0)
+{
+    <div>
+        @foreach (User user in Model)
+        {
+            <p>@user.Name:</p>
+            if (user.ProfilePictureUrl != null)
+            {
+                <img src="@user.ProfilePictureUrl" alt="Profile picture" />
+
+            }
+            else
+            {
+                <p>No profile picture</p>
+            }
+            <a class="btn btn-success" asp-controller="User" asp-action="Edit" asp-route-Id="@user.Id">Edit</a>
+        }
+    </div>
+    
+    <a class="btn btn-success" asp-controller="User" asp-action="Add">Add new user</a>
+}
+else
+{
+    <p>No user found.</p>
+}

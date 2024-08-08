@@ -1,0 +1,33 @@
+﻿@model UploadImageMVCTest.Models.ViewModel.UserAdded
+
+@{
+    ViewData["Title"] = "Update user";
+}
+
+<h1>Edit user informations</h1>
+
+<form enctype="multipart/form-data" method="post" asp-action="Edit" asp-controller="User">
+    <input type="hidden" asp-formaction="@Model.Id" readonly />
+
+    <div class="form-group">
+        <label asp-for="@Model.Name" class="control-label">Name</label>
+        <input type="text" asp-for="@Model.Name" class="form-control" />
+        <span asp-validation-for="@Model.Name" class="text-danger"></span>
+    </div>
+
+    <img src="@Model.ImageUrl" alt="Profile picture" />
+
+    <div class="form-group">
+        <label asp-for="@Model.Image" class="control-label"></label>
+        <div class="custom-file">
+            <input asp-for="@Model.Image" class="custom-file-input" id="customFile" />
+        </div>
+        <span asp-validation-for="@Model.Image" class="text-danger"></span>
+    </div>
+
+    <div class="mt-3">
+        <div class="d-flex justify-content-start">
+            <button class="btn btn-primary">Edit user</button>
+        </div>
+    </div>
+</form>

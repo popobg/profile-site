@@ -33,3 +33,5 @@ msbuild.wrn
 
 # environement variables
 .env
+
+Images/

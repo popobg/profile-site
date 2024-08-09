@@ -1,5 +1,6 @@
 ﻿using CloudinaryDotNet;
 using CloudinaryDotNet.Actions;
+using System.Net;
 using UploadImageMVCTest.Models.Entities;
 using UploadImageMVCTest.Models.ViewModel;
 using UploadImageMVCTest.Repositories;
@@ -8,7 +9,9 @@ namespace UploadImageMVCTest.Service
 {
     public class UserService : IUserService
     {
+        // Repository
         private readonly IUserRepository _userRepository;
+        // API Cloudinary
         private readonly Cloudinary _cloudinary;
 
         public UserService(IUserRepository userRepository, Cloudinary cloudinary)
@@ -19,15 +22,15 @@ namespace UploadImageMVCTest.Service
 
         public List<User> GetUsers() => _userRepository.GetUsers();
 
-        public User GetUserById(int Id) => _userRepository.GetUserById(Id);
+        public User? GetUserById(int userId) => _userRepository.GetUserById(userId);
 
-        public async Task AddUser(UserAdded modelUser)
+        public async Task AddUserAsync(UserAdded modelUser)
         {
             if (modelUser.Image != null && modelUser.Image.Length > 0)
             {
                 try
                 {
-                    modelUser = await UploadImageonCloudinary(modelUser);
+                    modelUser = await UploadImageCloudinaryAsync(modelUser);
                 }
                 catch (Exception)
                 {
@@ -40,7 +43,7 @@ namespace UploadImageMVCTest.Service
 
         public UserAdded GetUserToUpdate(int userId)
         {
-            User user = _userRepository.GetUserById(userId);
+            User? user = _userRepository.GetUserById(userId);
 
             if (user == null) throw new Exception("No user found at this Id");
 
@@ -48,30 +51,91 @@ namespace UploadImageMVCTest.Service
             {
                 Id = user.Id,
                 Name = user.Name,
-                ImageUrl = user.ProfilePictureUrl
+                ProfilePictureUrl = user.ProfilePictureUrl
             };
 
             return modelUser;
         }
 
-        public async Task EditUser(UserAdded modelUser)
+        public async Task EditUserAsync(UserAdded modelUser)
         {
             if (modelUser.Image != null && modelUser.Image.Length > 0)
             {
                 try
                 {
-                    modelUser = await UploadImageonCloudinary(modelUser);
+                    User user = _userRepository.GetUserById(modelUser.Id);
+                    modelUser.ProfileImagePublicId = user.ProfileImagePublicId;
+
+                    try
+                    {
+                        if (!string.IsNullOrEmpty(modelUser.ProfileImagePublicId))
+                        {
+                            modelUser = await DeleteImageCloudinaryAsync(modelUser);
+                        }
+                        modelUser = await UploadImageCloudinaryAsync(modelUser);
+                    }
+                    catch (Exception)
+                    {
+                        throw new Exception("Fail to upload image on cloudinary");
+                    }
                 }
                 catch (Exception)
                 {
-                    throw new Exception("Fail to upload image on cloudinary");
+                    throw new Exception("No user found by this Id");
                 }
+
+
             }
 
             _userRepository.EditUser(modelUser);
         }
 
-        private async Task<UserAdded> UploadImageonCloudinary(UserAdded modelUser)
+        public async Task DeleteUserAsync(int userId)
+        {
+            try
+            {
+                User? user = _userRepository.GetUserById(userId);
+
+                if (user is null) throw new Exception("No user found with this Id");
+
+                user = await DeleteProfilePictureAsync(user);
+
+                _userRepository.DeleteUser(user);
+            }
+            catch (Exception)
+            {
+                throw new Exception("There was a problem during the deletion operation");
+            }
+        }
+
+        public async Task<User> DeleteProfilePictureAsync(User user)
+        {
+            try
+            {
+                UserAdded modelUser = new UserAdded()
+                {
+                    Id = user.Id,
+                    Name = user.Name,
+                    ProfilePictureUrl = user.ProfilePictureUrl,
+                    ProfileImagePublicId = user.ProfileImagePublicId
+                };
+
+                if (!string.IsNullOrEmpty(user.ProfileImagePublicId))
+                {
+                    modelUser = await DeleteImageCloudinaryAsync(modelUser);
+                    user.ProfilePictureUrl = null;
+                    user.ProfileImagePublicId = null;
+                }
+
+                return modelUser;
+            }
+            catch (Exception)
+            {
+                throw new Exception("There was a problem during the deletion operation");
+            }
+        }
+
+        private async Task<UserAdded> UploadImageCloudinaryAsync(UserAdded modelUser)
         {
             // unique file name, different then the one given by the user
             string fileName = Guid.NewGuid().ToString() + "_" + modelUser.Image.FileName;
@@ -94,7 +158,7 @@ namespace UploadImageMVCTest.Service
 
             if (uploadResult.StatusCode == System.Net.HttpStatusCode.OK)
             {
-                modelUser.ImageUrl = uploadResult.SecureUrl.ToString();
+                modelUser.ProfilePictureUrl = uploadResult.SecureUrl.ToString();
                 modelUser.ProfileImagePublicId = uploadResult.PublicId;
             }
             else
@@ -103,6 +167,25 @@ namespace UploadImageMVCTest.Service
             }
 
             return modelUser;
+        }
+
+        private async Task<UserAdded> DeleteImageCloudinaryAsync(UserAdded modelUser)
+        {
+            var deletionParams = new DeletionParams(modelUser.ProfileImagePublicId);
+
+            var deletionResult = await _cloudinary.DestroyAsync(deletionParams);
+
+            if (deletionResult.StatusCode == HttpStatusCode.OK)
+            {
+                // Remove the image URL and PublicId from the user
+                modelUser.ProfilePictureUrl = null;
+                modelUser.ProfileImagePublicId = null;
+                return modelUser;
+            }
+            else
+            {
+                throw new Exception("deletionResult Status Code not Ok, can not delete the image on the cloudinary");
+            }
         }
     }
 }

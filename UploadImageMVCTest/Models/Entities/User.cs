@@ -4,10 +4,10 @@ namespace UploadImageMVCTest.Models.Entities
 {
     public class User
     {
-        public int Id { get; set; }
+        public int Id;
 
-        [Required]
-        [MaxLength(50)]
+        [Required(ErrorMessage = "You must have a name")]
+        [MaxLength(50, ErrorMessage = "Max 50 char")]
         public string Name { get; set; } = string.Empty;
         public string? ProfilePictureUrl { get; set; } = string.Empty;
 

@@ -35,7 +35,7 @@ namespace UploadImageMVCTest.Controllers
 
             try
             {
-                await _userService.AddUser(modelUser);
+                await _userService.AddUserAsync(modelUser);
                 return RedirectToAction("List");
             }
             catch (Exception)
@@ -63,8 +63,10 @@ namespace UploadImageMVCTest.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Edit(UserAdded updatedUser)
+        public async Task<IActionResult> Edit(UserAdded updatedUser, int Id)
         {
+            updatedUser.Id = Id;
+
             if (!ModelState.IsValid)
             {
                 if (updatedUser is null) throw new Exception("The model received is null");
@@ -85,7 +87,7 @@ namespace UploadImageMVCTest.Controllers
 
             try
             {
-                await _userService.EditUser(updatedUser);
+                await _userService.EditUserAsync(updatedUser);
                 return RedirectToAction("List");
             }
             catch (Exception)
@@ -93,9 +95,40 @@ namespace UploadImageMVCTest.Controllers
                 // ViewError with a message?
                 return NotFound();
             }
+        }
 
+        [HttpGet]
+        public async Task<IActionResult> Delete(int Id)
+        {
+            try
+            {
+                await _userService.DeleteUserAsync(Id);
 
-            return RedirectToAction("List");
+                return RedirectToAction("List");
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeleteProfilePicture(int Id)
+        {
+            try
+            {
+                User? user = _userService.GetUserById(Id);
+
+                if (user is null) throw new Exception("No user found by this Id");
+
+                await _userService.DeleteProfilePictureAsync(user);
+
+                return RedirectToAction("Edit", new {Id});
+            }
+            catch (Exception)
+            {
+                return NotFound();
+            }
         }
     }
 }

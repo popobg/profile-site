@@ -61,30 +61,24 @@ namespace UploadImageMVCTest.Service
         {
             if (modelUser.Image != null && modelUser.Image.Length > 0)
             {
+                User? user = _userRepository.GetUserById(modelUser.Id);
+
+                if (user is null) throw new Exception("No user found at this ID.");
+
+                modelUser.ProfileImagePublicId = user.ProfileImagePublicId;
+
                 try
                 {
-                    User user = _userRepository.GetUserById(modelUser.Id);
-                    modelUser.ProfileImagePublicId = user.ProfileImagePublicId;
-
-                    try
+                    if (!string.IsNullOrEmpty(modelUser.ProfileImagePublicId))
                     {
-                        if (!string.IsNullOrEmpty(modelUser.ProfileImagePublicId))
-                        {
-                            modelUser = await DeleteImageCloudinaryAsync(modelUser);
-                        }
-                        modelUser = await UploadImageCloudinaryAsync(modelUser);
+                        modelUser = await DeleteImageCloudinaryAsync(modelUser);
                     }
-                    catch (Exception)
-                    {
-                        throw new Exception("Fail to upload image on cloudinary");
-                    }
+                    modelUser = await UploadImageCloudinaryAsync(modelUser);
                 }
                 catch (Exception)
                 {
-                    throw new Exception("No user found by this Id");
+                    throw new Exception("Fail to upload image on cloudinary");
                 }
-
-
             }
 
             _userRepository.EditUser(modelUser);
